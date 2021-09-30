@@ -13,7 +13,7 @@ coords = coords.to_numpy().tolist()
 m = folium.Map(location=list(reversed(coords[2])), zoom_start=10)
 folium.Marker(list(reversed(coords[0])), popup=locations.Store[0], icon=folium.Icon(color='black')).add_to(m)
 
-for i in range(1, len(coords)):
+for i in range(0, len(coords)):
     if locations.Type[i] == "Countdown":
         iconCol = "green"
     elif locations.Type[i] == "FreshChoice":
