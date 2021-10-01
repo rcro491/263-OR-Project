@@ -7,9 +7,15 @@ import openrouteservice as ors
 locations = pd.read_csv("WoolworthsLocations.csv")
 locations.index = np.arange(1, len(locations) + 1)
 
-# might need to use demand data we created instead of this?
-demands = pd.read_csv("WoolworthsDemands.csv")
-demands.index = np.arange(1, len(demands) + 1)
+# demand data from averages. Distribution Centre was given demand of arbitrary high number 1000
+weekday_demands = pd.read_csv("Demands as CSV.csv")
+line = pd.DataFrame({"Store": "Distribution Centre", "Demand": 1000}, index=[56])
+weekday_demands = pd.concat([weekday_demands.iloc[:55], line, weekday_demands.iloc[55:]]).reset_index(drop=True)
+weekday_demands.index = np.arange(1, len(weekday_demands) + 1)
+weekend_demands = pd.read_csv("Weekend Demands as CSV.csv")
+line = pd.DataFrame({"Store": "Distribution Centre", "Demand": 1000}, index=[56])
+weekend_demands = pd.concat([weekend_demands.iloc[:55], line, weekend_demands.iloc[55:]]).reset_index(drop=True)
+weekend_demands.index = np.arange(1, len(weekend_demands) + 1)
 
 distances = pd.read_csv("WoolworthsDistances.csv")
 distances.index = np.arange(1, len(distances) + 1)
@@ -36,6 +42,9 @@ durations:
     works identically to distances data.
     E.g: "durations.loc[2][1]" returns the time taken to travel from store 1 to store 2 (Countdown Airport to Countdown
     Auckland City)
+demands:
+    works like locations and has two different index types being: Store and Demand
+    E.g: to get weekday demand for Countdown Airport: "weekday_demands.Demand[1]" returns 8
 """
 
 
