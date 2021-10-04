@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import folium
 import openrouteservice as ors
+import itertools
 
 # read data and shift indexes so they are the same as numbering in map
 locations = pd.read_csv("WoolworthsLocations.csv")
@@ -22,6 +23,7 @@ distances.index = np.arange(1, len(distances) + 1)
 durations = pd.read_csv("WoolworthsTravelDurations.csv")
 durations.index = np.arange(1, len(durations) + 1)
 
+print(weekend_demands.loc[50]['Store'])
 """
 HOW TO INDEX DATA IN DF
 
@@ -75,3 +77,132 @@ def colour_map():
 
     # save the map to an html file (viewable in browser)
     # m.save('map.html')
+
+def weekday_routes():
+    #Groups of stores split into 5 Auckland regions - South, East, Central, West, North
+    south = [1, 22, 23, 24, 25, 26, 40, 41, 44, 49, 59, 60, 63, 65]
+    east = [3, 6, 14, 16, 27, 28, 34, 39, 45, 48, 58]
+    central = [2, 9, 10, 11, 29, 30, 32, 33, 35, 38, 42, 43, 46, 53, 54]
+    west = [5, 13, 15, 17, 18, 19, 20, 37, 51, 52, 55, 57, 61, 62, 64, 66]
+    north = [4, 7, 8, 12, 21, 31, 36, 47, 50]
+    #Distribution centre
+    dist_centre = 56
+    #Create a list of regions
+    regions = [south, east, central, west, north]
+    #Route matrix for region 
+    routes = np.zeros((0, 4))
+    
+
+    #Loop through the regions
+    for region in regions:
+        #For each node in the region
+        for route in itertools.combinations(region, 3):
+            i1, i2, i3 = route
+            #Record demand for each of the nodes
+            demand1 = weekday_demands.loc[i1]['Demand']
+            demand2 = weekday_demands.loc[i2]['Demand']
+            demand3 = weekday_demands.loc[i3]['Demand']
+            #Calculate total demand
+            total_demand = (demand1 + demand2 + demand3)
+            #If total demand is more than 26 the route is not feasible
+            if total_demand > 26:
+                continue
+            #Record the total time for each of the nodes - travel from distribution centre + unloading
+            #Distribution centre to node1, node2, node3
+            time0_1 = (durations.loc[i1][dist_centre])/60 + 7.5*demand1
+            #Node1 to node2
+            time1_2 = (durations.loc[i2][i1])/60 + 7.5*demand2
+            #Node2 to node3
+            time2_3 = (durations.loc[i3][i2])/60 + 7.5*demand3
+            #Node3 back to distribution centre
+            time3 = (durations.loc[dist_centre][i3])/60
+            #Calculate the total time for route 1: distribution centre - node1 - node2 - node3 - distribution centre
+            total_time = time0_1 + time1_2 + time2_3 + time3
+            #If the total time is less than or equal to 4h calculate cost using standard truck pricing
+            if total_time <= 240:
+                cost = total_time*3.75
+            #Otherwise calculate cost with overtime pricing
+            else:
+                overtime = total_time - 240
+                cost = 240*3.75 + overtime*4.583
+            #Add route1 and total cost to route matrix
+            routes = np.append(routes, np.array([[i1, i2, i3, cost]]), axis = 0)
+    #Return route matrices
+    return routes
+
+def weekend_routes():
+    #Groups of stores split into 5 Auckland regions - South, East, Central, West, North
+    south = [1, 22, 23, 24, 25, 26, 40, 41, 44, 49]
+    east = [3, 6, 14, 16, 27, 28, 34, 39, 45, 48]
+    central = [2, 9, 10, 11, 32, 33, 35, 38, 42, 43, 46, 53, 54, 54]
+    west = [5, 13, 15, 17, 18, 19, 20, 37, 51, 52, 55]
+    north = [4, 7, 8, 12, 21, 31, 36, 47, 50]
+    #Distribution centre
+    dist_centre = 56
+    #Create a list of regions
+    regions = [south, east, central, west, north]
+    #Route matrix for region 
+    routes = np.zeros((0, 5))
+    
+
+    #Loop through the regions
+    for region in regions:
+        #For each node in the region
+        for route in itertools.combinations(region, 4):
+            i1, i2, i3, i4 = route
+            #Record demand for each of the nodes
+            demand1 = weekend_demands.loc[i1]['Demand']
+            demand2 = weekend_demands.loc[i2]['Demand']
+            demand3 = weekend_demands.loc[i3]['Demand']
+            demand4 = weekend_demands.loc[i4]['Demand']
+            #Calculate total demand
+            total_demand = (demand1 + demand2 + demand3 + demand4)
+            #If total demand is more than 26 the route is not feasible
+            if total_demand > 26:
+                continue
+            #Record the total time for each of the nodes - travel from distribution centre + unloading
+            #Distribution centre to node1, node2, node3
+            time0_1 = (durations.loc[i1][dist_centre])/60 + 7.5*demand1
+            #Node1 to node2
+            time1_2 = (durations.loc[i2][i1])/60 + 7.5*demand2
+            #Node2 to node3
+            time2_3 = (durations.loc[i3][i2])/60 + 7.5*demand3
+            #Node 3 to node4
+            time3_4 = (durations.loc[i4][i3])/60 + 7.5*demand4
+            #Node4 back to distribution centre
+            time4 = (durations.loc[dist_centre][i4])/60
+            #Calculate the total time for route 1: distribution centre - node1 - node2 - node3 - distribution centre
+            total_time = time0_1 + time1_2 + time2_3 + time3_4 + time4
+            #If the total time is less than or equal to 4h calculate cost using standard truck pricing
+            if total_time <= 240:
+                cost = total_time*3.75
+            #Otherwise calculate cost with overtime pricing
+            else:
+                overtime = total_time - 240
+                cost = 240*3.75 + overtime*4.583
+            #Add route1 and total cost to route matrix
+            routes = np.append(routes, np.array([[i1, i2, i3, i4, cost]]), axis = 0)
+    #Return route matrices
+    return routes
+
+def store_name(node):
+    return weekday_demands.loc[node]['Store']
+
+
+def main():
+    weekday_costs = weekday_routes()
+    weekdays = pd.DataFrame(data = weekday_costs, columns = ['Store 1', 'Store 2', 'Store 3', 'Cost'])
+    weekdays["Store 1"] = weekdays["Store 1"].apply(store_name)
+    weekdays["Store 2"] = weekdays["Store 2"].apply(store_name)
+    weekdays["Store 3"] = weekdays["Store 3"].apply(store_name)
+    print(weekdays)
+    weekend_costs = weekend_routes()
+    weekends = pd.DataFrame(data = weekend_costs, columns = ['Store 1', 'Store 2', 'Store 3', 'Store 4', 'Cost'])
+    weekends["Store 1"] = weekends["Store 1"].apply(store_name)
+    weekends["Store 2"] = weekends["Store 2"].apply(store_name)
+    weekends["Store 3"] = weekends["Store 3"].apply(store_name)
+    weekends["Store 4"] = weekends["Store 4"].apply(store_name)
+    print(weekends)
+
+if __name__ == "__main__":
+    main()
