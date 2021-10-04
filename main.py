@@ -23,6 +23,7 @@ distances.index = np.arange(1, len(distances) + 1)
 durations = pd.read_csv("WoolworthsTravelDurations.csv")
 durations.index = np.arange(1, len(durations) + 1)
 
+print(weekend_demands.loc[50]['Store'])
 """
 HOW TO INDEX DATA IN DF
 
@@ -89,7 +90,9 @@ def weekday_routes():
     #Create a list of regions
     regions = [south, east, central, west, north]
     #Route matrix for region 
-    routes = np.zeros((0, 4))
+    routes = np.zeros((0, 3))
+    costs = np.zeros(0)
+    extra_truck_costs = np.zeros(0)
     
 
     #Loop through the regions
@@ -120,14 +123,20 @@ def weekday_routes():
             #If the total time is less than or equal to 4h calculate cost using standard truck pricing
             if total_time <= 240:
                 cost = total_time*3.75
+                #pricing if extra trucks from daily freight are required - 2000 for standard 4h shift
+                extra_truck_cost = 2000
             #Otherwise calculate cost with overtime pricing
             else:
                 overtime = total_time - 240
                 cost = 240*3.75 + overtime*4.583
+                #pricing if extra trucks from daily freight are required - 4000 for 8h shift
+                extra_truck_cost = 4000
             #Add route1 and total cost to route matrix
-            routes = np.append(routes, np.array([[i1, i2, i3, cost]]), axis = 0)
+            routes = np.append(routes, np.array([[i1, i2, i3]]), axis = 0)
+            costs = np.append(costs, cost)
+            extra_truck_costs = np.append(extra_truck_costs, extra_truck_cost)
     #Return route matrices
-    return routes
+    return routes, costs, extra_truck_costs
 
 def weekend_routes():
     #Groups of stores split into 5 Auckland regions - South, East, Central, West, North
@@ -141,8 +150,9 @@ def weekend_routes():
     #Create a list of regions
     regions = [south, east, central, west, north]
     #Route matrix for region 
-    routes = np.zeros((0, 5))
-    
+    routes = np.zeros((0, 4))
+    costs = np.zeros(0)
+    extra_truck_costs = np.zeros(0)
 
     #Loop through the regions
     for region in regions:
@@ -175,33 +185,40 @@ def weekend_routes():
             #If the total time is less than or equal to 4h calculate cost using standard truck pricing
             if total_time <= 240:
                 cost = total_time*3.75
+                extra_truck_cost = 2000
             #Otherwise calculate cost with overtime pricing
             else:
                 overtime = total_time - 240
                 cost = 240*3.75 + overtime*4.583
+                extra_truck_cost = 4000
             #Add route1 and total cost to route matrix
-            routes = np.append(routes, np.array([[i1, i2, i3, i4, cost]]), axis = 0)
+            routes = np.append(routes, np.array([[i1, i2, i3, i4]]), axis = 0)
+            costs = np.append(costs, cost)
+            extra_truck_costs = np.append(extra_truck_costs, extra_truck_cost)
     #Return route matrices
-    return routes
+    return routes, costs, extra_truck_costs
 
 def store_name(node):
     return weekday_demands.loc[node]['Store']
 
 
 def main():
-    weekday_costs = weekday_routes()
-    weekdays = pd.DataFrame(data = weekday_costs, columns = ['Store 1', 'Store 2', 'Store 3', 'Cost'])
+    weekday_feasible_routes, weekday_costs, weekday_extra_costs = weekday_routes()
+    weekdays = pd.DataFrame(data = weekday_feasible_routes, columns = ['Store 1', 'Store 2', 'Store 3'])
     weekdays["Store 1"] = weekdays["Store 1"].apply(store_name)
     weekdays["Store 2"] = weekdays["Store 2"].apply(store_name)
     weekdays["Store 3"] = weekdays["Store 3"].apply(store_name)
-    print(weekdays)
-    weekend_costs = weekend_routes()
-    weekends = pd.DataFrame(data = weekend_costs, columns = ['Store 1', 'Store 2', 'Store 3', 'Store 4', 'Cost'])
+    weekday_cost = pd.Series(weekday_costs)
+    weekday_extra = pd.Series(weekday_extra_costs)
+    weekend_feasible_routes, weekend_costs, weekend_extra_costs = weekend_routes()
+    weekends = pd.DataFrame(data = weekend_feasible_routes, columns = ['Store 1', 'Store 2', 'Store 3', 'Store 4'])
     weekends["Store 1"] = weekends["Store 1"].apply(store_name)
     weekends["Store 2"] = weekends["Store 2"].apply(store_name)
     weekends["Store 3"] = weekends["Store 3"].apply(store_name)
     weekends["Store 4"] = weekends["Store 4"].apply(store_name)
-    print(weekends)
+    weekend_cost = pd.Series(weekend_costs)
+    weekend_extra = pd.Series(weekend_extra_costs)
+    
 
 if __name__ == "__main__":
     main()
