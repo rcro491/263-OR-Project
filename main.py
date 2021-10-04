@@ -23,7 +23,6 @@ distances.index = np.arange(1, len(distances) + 1)
 durations = pd.read_csv("WoolworthsTravelDurations.csv")
 durations.index = np.arange(1, len(durations) + 1)
 
-print(weekend_demands.loc[50]['Store'])
 """
 HOW TO INDEX DATA IN DF
 
