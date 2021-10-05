@@ -279,35 +279,37 @@ def weekend_routes():
 
 
 def LP_weekday():
+    # initialise LP problem
     prob = LpProblem("Weekday Routes", LpMinimize)
-    # include all stores (get rid of distribution centre)
-    store_names = pd.concat([locations.Store[:55], locations.Store[56:]]).reset_index(drop=True)
-    # Right hand sides are all equal to one (each node/store has one delivery)
-    RHS = pd.Series([1] * 65, index=store_names)
-    # put the routes into a series indexed by the route number
+
     weekday_routes1 = weekday_routes()  # so function only called once to save time
+
     routes = pd.Series(list(weekday_routes1[0]))
+
     # variables are the individual routes
     route_vars = list(range(0, 3672))
-    vars = LpVariable.dicts("Route", route_vars, cat=const.LpBinary)
-    vars2 = LpVariable.dicts("Extra Route", route_vars, cat=const.LpBinary)
-    # put costs into easy to access variable
-    costs = pd.Series(list(weekday_routes1[1]))
-    costs2 = pd.Series(list(weekday_routes1[2]))
+    vars = LpVariable.dicts("Route", route_vars, cat=const.LpBinary)  # normal routes
+    vars2 = LpVariable.dicts("Extra Route", route_vars, cat=const.LpBinary)  # extra routes if needed (Daily Freight)
+
+    costs = pd.Series(list(weekday_routes1[1]))  # costs of normal routes
+    costs2 = pd.Series(list(weekday_routes1[2]))  # costs of extra routes
+
     # objective function
     prob += lpSum([vars[i] * costs[i] + vars2[i] * costs2[i] for i in route_vars]), "Costs"
 
     # sort through all routes, so that each node has list of routes it is in
-    f = []
-    # create empty lists for each store and put it into series
+    f = []  # create empty lists for each store and put it into series
     for it in range(65):
-        f.append([])
-    # initialise empty arrays for each store
+        f.append([])  # initialise empty arrays for each store
+    # splice indexes so distribution centre is not included
     indexes = list(range(1, 56))  # first 55 stores
     indexes.extend(list(range(57, 67)))  # rest of stores
     stores = pd.Series(f, index=indexes)
+
+    # place all route numbers into the node they carry
     count = 0
     for j in routes:
+        # check if route only contains two stores
         if j[2] == 0:
             stores[round(j[0])].append(count)
             stores[round(j[1])].append(count)
@@ -317,8 +319,10 @@ def LP_weekday():
             stores[round(j[1])].append(count)
             stores[round(j[2])].append(count)
             count += 1
+
     # truck availability constraint
     prob += lpSum([vars[i] for i in vars]) <= 60, "Trucks"
+
     # stores have one delivery constraint
     count = 1
     for k in indexes:
@@ -351,30 +355,35 @@ def LP_weekend():
     west = [5, 13, 15, 17, 18, 19, 20, 37, 51, 52, 55]
     north = [4, 7, 8, 12, 21, 31, 36, 47, 50]
     weekend_nodes = south + east + central + west + north
+
     # initialise problem
     prob = LpProblem("Weekend Routes", LpMinimize)
-    # put the routes into a series indexed by the route number
+
     weekend_routes1 = weekend_routes()  # so function only called once to save time
+
     routes = pd.Series(list(weekend_routes1[0]))
+
     # variables are the individual routes
     route_vars = list(range(0, 3198))
-    vars = LpVariable.dicts("Route", route_vars, cat=const.LpBinary)
-    vars2 = LpVariable.dicts("Extra Route", route_vars, cat=const.LpBinary)
-    # put costs into easy to access variable
-    costs = pd.Series(list(weekend_routes1[1]))
-    costs2 = pd.Series(list(weekend_routes1[2]))
+    vars = LpVariable.dicts("Route", route_vars, cat=const.LpBinary)  # normal routes
+    vars2 = LpVariable.dicts("Extra Route", route_vars, cat=const.LpBinary)  # extra routes (Daily Freight)
+
+    costs = pd.Series(list(weekend_routes1[1]))  # normal costs
+    costs2 = pd.Series(list(weekend_routes1[2]))  # extra costs
+
     # objective function
     prob += lpSum([vars[i] * costs[i] + vars2[i] * costs2[i] for i in route_vars]), "Costs"
 
     # sort through all routes, so that each node has list of routes it is in
-    f = []
-    # create empty lists for each store and put it into series
+    f = []  # create empty lists for each store and put it into series
     for it in range(53):
-        f.append([])
-    # initialise empty arrays for each store
+        f.append([])    # initialise empty arrays for each store
     stores = pd.Series(f, index=weekend_nodes)
+
+    # place all route numbers into the node they carry
     count = 0
     for j in routes:
+        # check if route contains single store
         if j[1] == 0:
             stores[round(j[0])].append(count)
             count += 1
@@ -384,8 +393,10 @@ def LP_weekend():
             stores[round(j[2])].append(count)
             stores[round(j[3])].append(count)
             count += 1
+
     # truck availability constraint
     prob += lpSum([vars[i] for i in vars]) <= 60, "Trucks"
+
     # stores have one delivery constraint
     count = 1
     for k in weekend_nodes:
