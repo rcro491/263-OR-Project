@@ -272,9 +272,9 @@ def LP_weekday():
     weekday_routes1 = weekday_routes()  # so function only called once to save time
     routes = pd.Series(list(weekday_routes1[0]))
     # variables are the individual routes
-    route_vars = list(range(0, 946))
-    vars = LpVariable.dicts("Route", route_vars, 0, None, LpBinary)
-    vars2 = LpVariable.dicts("Extra Route", route_vars, 0, None, LpBinary)
+    route_vars = list(range(0, 2992))
+    vars = LpVariable.dicts("Route", route_vars, cat=const.LpBinary)
+    vars2 = LpVariable.dicts("Extra Route", route_vars, cat=const.LpBinary)
     # put costs into easy to access variable
     costs = pd.Series(list(weekday_routes1[1]))
     costs2 = pd.Series(list(weekday_routes1[2]))
@@ -292,21 +292,43 @@ def LP_weekday():
     stores = pd.Series(f, index=indexes)
     count = 0
     for j in routes:
-        stores[round(j[0])].append(count)
-        stores[round(j[1])].append(count)
-        stores[round(j[2])].append(count)
-        count += 1
+        if j[2] == 0:
+            stores[round(j[0])].append(count)
+            stores[round(j[1])].append(count)
+            count += 1
+        else:
+            stores[round(j[0])].append(count)
+            stores[round(j[1])].append(count)
+            stores[round(j[2])].append(count)
+            count += 1
     # truck availability constraint
-    prob += lpSum([vars[i] for i in routes]) <= 60, "Trucks"
+    prob += lpSum([vars[i] for i in vars]) <= 60, "Trucks"
     # stores have one delivery constraint
-    for i in store_names:
-        prob += lpSum([vars[i]]) == 1
+    count = 1
+    for k in stores:
+        prob += lpSum([vars[j] + vars2[j] for j in k]) == 1
+        count += 1
+
+    # solve LP
+    prob.writeLP('Weekdays.lp')
+    prob.solve()
+
+    # The status of the solution is printed to the screen
+    print("Status:", LpStatus[prob.status])
+
+    # Each of the variables is printed with its resolved optimum value
+    for v in prob.variables():
+        if v.varValue != 0:
+            print(v.name, "=", v.varValue)
+
+    # The optimised objective function value of Ingredients pue is printed to the screen
+    print("Total cost from Routes = ", value(prob.objective))
 
 
 def main():
     weekday_feasible_routes, weekday_costs, weekday_extra_costs = weekday_routes()
     weekdays = pd.DataFrame(data=weekday_feasible_routes, columns=['Store 1', 'Store 2', 'Store 3'])
-    print(weekdays)
+    # print(weekdays)
     weekday_cost = pd.Series(weekday_costs)
     weekday_extra = pd.Series(weekday_extra_costs)
     weekend_feasible_routes, weekend_costs, weekend_extra_costs = weekend_routes()
@@ -317,3 +339,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    LP_weekday()
