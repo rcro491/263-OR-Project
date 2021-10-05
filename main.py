@@ -305,7 +305,11 @@ def LP_weekday():
     prob += lpSum([vars[i] for i in vars]) <= 60, "Trucks"
     # stores have one delivery constraint
     count = 1
-    for k in indexes[0:49]:
+    # store 51 makes solution not optimal (stores 5-66 can be optimal, 4-66 not)
+    indexes2 = list(range(1, 4))
+    indexes2.extend(list(range(5, 56)))
+    indexes2.extend(list(range(57, 67)))
+    for k in indexes2:
         prob += lpSum([vars[j] + vars2[j] for j in stores[k]]) == 1
         count += 1
 
