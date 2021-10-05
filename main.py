@@ -100,8 +100,8 @@ def weekday_routes():
     for i in range(len(regions)):
         region = regions[i]
         two_nodes = False
-        m = (0,0)
-        p = (0,0)
+        m = (0, 0)
+        p = (0, 0)
         # For each node in the region
         for route in itertools.combinations(region, 3):
             i1, i2, i3 = route
@@ -113,7 +113,7 @@ def weekday_routes():
             total_demand = (demand1 + demand2 + demand3)
             # If total demand is more than 26 the route is not feasible
             if total_demand > 26:
-                #i1 and i2
+                # i1 and i2
                 time0_1 = (durations.loc[i1][dist_centre]) / 60 + 7.5 * demand1
                 time1_2 = (durations.loc[i2][i1]) / 60 + 7.5 * demand2
                 time2 = (durations.loc[dist_centre][i2]) / 60
@@ -131,7 +131,7 @@ def weekday_routes():
                 # Add route1 and total cost to route matrix
                 routes = np.append(routes, np.array([[i1, i2, 0]]), axis=0)
                 costs = np.append(costs, cost)
-                #i2 and i3
+                # i2 and i3
                 extra_truck_costs = np.append(extra_truck_costs, extra_truck_cost)
                 time0_2 = (durations.loc[i2][dist_centre]) / 60 + 7.5 * demand1
                 time2_3 = (durations.loc[i3][i2]) / 60 + 7.5 * demand3
@@ -151,8 +151,8 @@ def weekday_routes():
                 routes = np.append(routes, np.array([[i2, i3, 0]]), axis=0)
                 costs = np.append(costs, cost)
                 extra_truck_costs = np.append(extra_truck_costs, extra_truck_cost)
-                #i1 and i3
-                time1_3 = (durations.loc[i3][i1])/60 + 7.5 * demand3
+                # i1 and i3
+                time1_3 = (durations.loc[i3][i1]) / 60 + 7.5 * demand3
                 total_time = time0_1 + time1_3 + time3
                 if total_time <= 240:
                     cost = total_time * 3.75
@@ -204,8 +204,8 @@ def weekend_routes():
     south = [1, 22, 23, 24, 25, 26, 40, 41, 44, 49]
     east = [3, 6, 14, 16, 27, 28, 34, 39, 45, 48]
     central = [2, 9, 10, 11, 32, 33, 35, 38, 42, 43, 46, 53, 54, 54]
-    west = [5, 13, 15, 17, 18, 19, 20, 37, 51, 52, 55]
-    north = [4, 7, 8, 12, 21, 31, 36, 47, 50]
+    west = [5, 13, 15, 17, 18, 19, 20, 37, 51, 52, 55, 38, 53, 33]
+    north = [4, 7, 8, 12, 21, 31, 36, 47, 50, 38, 53, 43, 35]
     # Distribution centre
     dist_centre = 56
     # Create a list of regions
@@ -257,9 +257,25 @@ def weekend_routes():
             routes = np.append(routes, np.array([[i1, i2, i3, i4]]), axis=0)
             costs = np.append(costs, cost)
             extra_truck_costs = np.append(extra_truck_costs, extra_truck_cost)
+        # add distribution to one store routes
+        for node in region:
+            time_to = (durations.loc[node][dist_centre]) / 60 + 7.5 * weekend_demands.loc[node]['Demand']
+            time_back = (durations.loc[dist_centre][node]) / 60
+            total_time = time_to + time_back
+            # If the total time is less than or equal to 4h calculate cost using standard truck pricing
+            if total_time <= 240:
+                cost = total_time * 3.75
+                extra_truck_cost = 2000
+            # Otherwise calculate cost with overtime pricing
+            else:
+                overtime = total_time - 240
+                cost = 240 * 3.75 + overtime * 4.583
+                extra_truck_cost = 4000
+            routes = np.append(routes, np.array([[node, 0, 0, 0]]), axis=0)
+            costs = np.append(costs, cost)
+            extra_truck_costs = np.append(extra_truck_costs, extra_truck_cost)
     # Return route matrices
     return routes, costs, extra_truck_costs
-
 
 
 def LP_weekday():
@@ -313,16 +329,85 @@ def LP_weekday():
     prob.writeLP('Weekdays.lp')
     prob.solve()
 
-    # The status of the solution is printed to the screen
-    print("Status:", LpStatus[prob.status])
+    print_message = False
+    if print_message is True:
+        # The status of the solution is printed to the screen
+        print("Status:", LpStatus[prob.status])
 
-    # Each of the variables is printed with its resolved optimum value
-    for v in prob.variables():
-        if v.varValue != 0:
-            print(v.name, "=", v.varValue)
+        # Each of the variables is printed with its resolved optimum value
+        for v in prob.variables():
+            if v.varValue != 0:
+                print(v.name, "=", v.varValue)
 
-    # The optimised objective function value of Ingredients pue is printed to the screen
-    print("Total cost from Routes = ", value(prob.objective))
+        # The optimised objective function value of Ingredients pue is printed to the screen
+        print("Total cost from Routes = ", value(prob.objective))
+
+
+def LP_weekend():
+    # nodes with deliveries for weekends
+    south = [1, 22, 23, 24, 25, 26, 40, 41, 44, 49]
+    east = [3, 6, 14, 16, 27, 28, 34, 39, 45, 48]
+    central = [2, 9, 10, 11, 32, 33, 35, 38, 42, 43, 46, 53, 54]
+    west = [5, 13, 15, 17, 18, 19, 20, 37, 51, 52, 55]
+    north = [4, 7, 8, 12, 21, 31, 36, 47, 50]
+    weekend_nodes = south + east + central + west + north
+    # initialise problem
+    prob = LpProblem("Weekend Routes", LpMinimize)
+    # put the routes into a series indexed by the route number
+    weekend_routes1 = weekend_routes()  # so function only called once to save time
+    routes = pd.Series(list(weekend_routes1[0]))
+    # variables are the individual routes
+    route_vars = list(range(0, 3198))
+    vars = LpVariable.dicts("Route", route_vars, cat=const.LpBinary)
+    vars2 = LpVariable.dicts("Extra Route", route_vars, cat=const.LpBinary)
+    # put costs into easy to access variable
+    costs = pd.Series(list(weekend_routes1[1]))
+    costs2 = pd.Series(list(weekend_routes1[2]))
+    # objective function
+    prob += lpSum([vars[i] * costs[i] + vars2[i] * costs2[i] for i in route_vars]), "Costs"
+
+    # sort through all routes, so that each node has list of routes it is in
+    f = []
+    # create empty lists for each store and put it into series
+    for it in range(53):
+        f.append([])
+    # initialise empty arrays for each store
+    stores = pd.Series(f, index=weekend_nodes)
+    count = 0
+    for j in routes:
+        if j[1] == 0:
+            stores[round(j[0])].append(count)
+            count += 1
+        else:
+            stores[round(j[0])].append(count)
+            stores[round(j[1])].append(count)
+            stores[round(j[2])].append(count)
+            stores[round(j[3])].append(count)
+            count += 1
+    # truck availability constraint
+    prob += lpSum([vars[i] for i in vars]) <= 60, "Trucks"
+    # stores have one delivery constraint
+    count = 1
+    for k in weekend_nodes:
+        prob += lpSum([vars[j] + vars2[j] for j in stores[k]]) == 1
+        count += 1
+
+    # solve LP
+    prob.writeLP('Weekends.lp')
+    prob.solve()
+
+    print_message = False
+    if print_message is True:
+        # The status of the solution is printed to the screen
+        print("Status:", LpStatus[prob.status])
+
+        # Each of the variables is printed with its resolved optimum value
+        for v in prob.variables():
+            if v.varValue != 0:
+                print(v.name, "=", v.varValue)
+
+        # The optimised objective function value of Ingredients pue is printed to the screen
+        print("Total cost from Routes = ", value(prob.objective))
 
 
 def main():
@@ -335,6 +420,7 @@ def main():
     weekends = pd.DataFrame(data=weekend_feasible_routes, columns=['Store 1', 'Store 2', 'Store 3', 'Store 4'])
     weekend_cost = pd.Series(weekend_costs)
     weekend_extra = pd.Series(weekend_extra_costs)
+    LP_weekend()
     LP_weekday()
 
 
