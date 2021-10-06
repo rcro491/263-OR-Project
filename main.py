@@ -117,57 +117,41 @@ def weekday_routes():
                 time0_1 = (durations.loc[i1][dist_centre]) / 60 + 7.5 * demand1
                 time1_2 = (durations.loc[i2][i1]) / 60 + 7.5 * demand2
                 time2 = (durations.loc[dist_centre][i2]) / 60
-                total_time = time0_1 + time1_2 + time2
-                if total_time <= 240:
-                    cost = total_time * 3.75
-                    # pricing if extra trucks from daily freight are required - 2000 for standard 4h shift
-                    extra_truck_cost = 2000
-                # Otherwise calculate cost with overtime pricing
-                else:
-                    overtime = total_time - 240
-                    cost = 240 * 3.75 + overtime * 4.583
-                    # pricing if extra trucks from daily freight are required - 4000 for 8h shift
-                    extra_truck_cost = 4000
-                # Add route1 and total cost to route matrix
-                routes = np.append(routes, np.array([[i1, i2, 0]]), axis=0)
-                costs = np.append(costs, cost)
                 # i2 and i3
-                extra_truck_costs = np.append(extra_truck_costs, extra_truck_cost)
-                time0_2 = (durations.loc[i2][dist_centre]) / 60 + 7.5 * demand1
+                time0_2 = (durations.loc[i2][dist_centre]) / 60 + 7.5 * demand2
                 time2_3 = (durations.loc[i3][i2]) / 60 + 7.5 * demand3
                 time3 = (durations.loc[dist_centre][i3]) / 60
-                total_time = time0_2 + time2_3 + time3
-                if total_time <= 240:
-                    cost = total_time * 3.75
-                    # pricing if extra trucks from daily freight are required - 2000 for standard 4h shift
-                    extra_truck_cost = 2000
-                # Otherwise calculate cost with overtime pricing
-                else:
-                    overtime = total_time - 240
-                    cost = 240 * 3.75 + overtime * 4.583
-                    # pricing if extra trucks from daily freight are required - 4000 for 8h shift
-                    extra_truck_cost = 4000
-                # Add route1 and total cost to route matrix
-                routes = np.append(routes, np.array([[i2, i3, 0]]), axis=0)
-                costs = np.append(costs, cost)
-                extra_truck_costs = np.append(extra_truck_costs, extra_truck_cost)
                 # i1 and i3
                 time1_3 = (durations.loc[i3][i1]) / 60 + 7.5 * demand3
-                total_time = time0_1 + time1_3 + time3
-                if total_time <= 240:
-                    cost = total_time * 3.75
-                    # pricing if extra trucks from daily freight are required - 2000 for standard 4h shift
-                    extra_truck_cost = 2000
-                # Otherwise calculate cost with overtime pricing
-                else:
-                    overtime = total_time - 240
-                    cost = 240 * 3.75 + overtime * 4.583
-                    # pricing if extra trucks from daily freight are required - 4000 for 8h shift
-                    extra_truck_cost = 4000
-                # Add route1 and total cost to route matrix
-                routes = np.append(routes, np.array([[i2, i3, 0]]), axis=0)
-                costs = np.append(costs, cost)
-                extra_truck_costs = np.append(extra_truck_costs, extra_truck_cost)
+                
+                total_time = [0] * 3
+
+                # i1 and i2
+                total_time[0] = time0_1 + time1_2 + time2
+                
+                # i2 and i3
+                total_time[1] = time0_2 + time2_3 + time3
+
+                # i1 and i3
+                total_time[2] = time0_1 + time1_3 + time3
+
+                for i in range(len(route)):
+
+                    if total_time[i] <= 240:
+                        cost = total_time[i] * 3.75
+                        # pricing if extra trucks from daily freight are required - 2000 for standard 4h shift
+                        extra_truck_cost = 2000
+                    # Otherwise calculate cost with overtime pricing
+                    else:
+                        overtime = total_time[i] - 240
+                        cost = 240 * 3.75 + overtime * 4.583
+                        # pricing if extra trucks from daily freight are required - 4000 for 8h shift
+                        extra_truck_cost = 4000
+                    # Add route1 and total cost to route matrix
+                    routes = np.append(routes, np.array([[route[i], route[(i+1)%3], 0]]), axis=0)
+                    costs = np.append(costs, cost)
+                    extra_truck_costs = np.append(extra_truck_costs, extra_truck_cost)
+                    
                 continue
             # Record the total time for each of the nodes - travel from distribution centre + unloading
             # Distribution centre to node1, node2, node3
