@@ -1,66 +1,66 @@
-Store,Demand
-Countdown Airport,8
-Countdown Auckland City,10
-Countdown Aviemore Drive,10
-Countdown Birkenhead,9
-Countdown Blockhouse Bay,8
-Countdown Botany Downs,10
-Countdown Browns Bay,11
-Countdown Glenfield,9
-Countdown Greenlane,10
-Countdown Grey Lynn,10
-Countdown Grey Lynn Central,9
-Countdown Hauraki Corner,9
-Countdown Henderson,9
-Countdown Highland Park,9
-Countdown Hobsonville,10
-Countdown Howick,11
-Countdown Kelston,9
-Countdown Lincoln Road,9
-Countdown Lynfield,9
-Countdown Lynmall,8
-Countdown Mairangi Bay,10
-Countdown Mangere East,9
-Countdown Mangere Mall,8
-Countdown Manukau,9
-Countdown Manukau Mall,10
-Countdown Manurewa,9
-Countdown Meadowbank,9
-Countdown Meadowlands,9
-Countdown Metro Albert Street,5
-Countdown Metro Halsey Street,6
-Countdown Milford,10
-Countdown Mt Eden,10
-Countdown Mt Roskill,10
-Countdown Mt Wellington,10
-Countdown Newmarket,9
-Countdown Northcote,9
-Countdown Northwest,9
-Countdown Onehunga,9
-Countdown Pakuranga,8
-Countdown Papakura,11
-Countdown Papatoetoe,10
-Countdown Ponsonby,10
-Countdown Pt Chevalier,10
-Countdown Roselands,9
-Countdown St Johns,8
-Countdown St Lukes,8
-Countdown Sunnynook,10
-Countdown Sylvia Park,9
-Countdown Takanini,9
-Countdown Takapuna,10
-Countdown Te Atatu,9
-Countdown Te Atatu South,9
-Countdown Three Kings,11
-Countdown Victoria Street West,11
-Countdown Westgate,9
-FreshChoice Glen Eden,5
-FreshChoice Half Moon Bay,6
-FreshChoice Mangere Bridge,5
-FreshChoice Otahuhu,5
-FreshChoice Ranui,6
-SuperValue Avondale,5
-SuperValue Flatbush,5
-SuperValue Palomino,6
-SuperValue Papakura,6
-SuperValue Titirangi,6
+Store,Demand,Average
+Countdown Airport,8,7.1
+Countdown Auckland City,10,8.05
+Countdown Aviemore Drive,10,7.7
+Countdown Birkenhead,9,8
+Countdown Blockhouse Bay,8,7.2
+Countdown Botany Downs,10,8.2
+Countdown Browns Bay,11,8.15
+Countdown Glenfield,9,7.05
+Countdown Greenlane,10,8.35
+Countdown Grey Lynn,10,8.6
+Countdown Grey Lynn Central,9,8.3
+Countdown Hauraki Corner,9,7.3
+Countdown Henderson,9,7.9
+Countdown Highland Park,9,7.65
+Countdown Hobsonville,10,8.6
+Countdown Howick,11,8.95
+Countdown Kelston,9,8.15
+Countdown Lincoln Road,9,8.4
+Countdown Lynfield,9,8.15
+Countdown Lynmall,8,6.95
+Countdown Mairangi Bay,10,8.7
+Countdown Mangere East,9,7.95
+Countdown Mangere Mall,8,7.15
+Countdown Manukau,9,7.55
+Countdown Manukau Mall,10,8.35
+Countdown Manurewa,9,8.05
+Countdown Meadowbank,9,8
+Countdown Meadowlands,9,8.15
+Countdown Metro Albert Street,5,4.25
+Countdown Metro Halsey Street,6,3.85
+Countdown Milford,10,8.25
+Countdown Mt Eden,10,7.65
+Countdown Mt Roskill,10,8
+Countdown Mt Wellington,10,8.55
+Countdown Newmarket,9,7.5
+Countdown Northcote,9,7.45
+Countdown Northwest,9,7.9
+Countdown Onehunga,9,7.7
+Countdown Pakuranga,8,7.55
+Countdown Papakura,11,7.2
+Countdown Papatoetoe,10,8.75
+Countdown Ponsonby,10,8.65
+Countdown Pt Chevalier,10,8.2
+Countdown Roselands,9,8.55
+Countdown St Johns,8,7.2
+Countdown St Lukes,8,7.05
+Countdown Sunnynook,10,8.5
+Countdown Sylvia Park,9,8.2
+Countdown Takanini,9,8
+Countdown Takapuna,10,7.7
+Countdown Te Atatu,9,7.6
+Countdown Te Atatu South,9,7.9
+Countdown Three Kings,11,9.05
+Countdown Victoria Street West,11,9.4
+Countdown Westgate,9,8.15
+FreshChoice Glen Eden,5,4.1
+FreshChoice Half Moon Bay,6,4.6
+FreshChoice Mangere Bridge,5,4.6
+FreshChoice Otahuhu,5,3.75
+FreshChoice Ranui,6,4.75
+SuperValue Avondale,5,4.45
+SuperValue Flatbush,5,4.65
+SuperValue Palomino,6,4.85
+SuperValue Papakura,6,4.75
+SuperValue Titirangi,6,4.35
