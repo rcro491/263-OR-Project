@@ -404,6 +404,127 @@ def LP_weekend():
         # The optimised objective function value of Ingredients pue is printed to the screen
         print("Total cost from Routes = ", value(prob.objective))
 
+def traffic(duration):
+    """
+    Uncertainty in durations between nodes
+    """
+    # Values to edit
+    time = np.random.normal(1.2*duration, 0.5*duration) + 3
+    return time
+
+def simulate_weekdays(routes, n, df, a=3):
+    """
+    Inputs: Routes = array of routes that have been selected
+            n = number of simulations to be done
+            df = dataframe of generated routes to pull selected routes from
+            a = standard deviation in store demands
+    Output: costs = array of costs of routing for each simulation, length n
+
+    """
+    
+    dist_centre = 56
+    # initialise cost array 
+    costs = [0]*n
+    
+    # run n simulations
+    for j in range(n):
+        # for each route in the selected routes
+        for route in routes:
+            # pull stores from each route
+            nodes = df.iloc[route,]
+
+            demand = [0]*len(nodes)
+            total_demand = 0
+
+            # generate variation in demand
+            for i in range(len(nodes)):
+                if nodes[i] != 0:
+                    demand[i] = round(np.random.normal(weekday_demands.loc[nodes[i]]['Average'], a))
+                    total_demand += demand[i]
+
+            # Make into integers so can use for indexing
+            n1 = int(nodes[0])
+            n2 = int(nodes[1])
+            n3 = int(nodes[2])
+            
+            # if total demand on a route > 26:
+            # need to factor in cost of extra truck
+            if total_demand > 26:
+                # Start generating variation in durations
+                time0_1 = (traffic(durations.loc[n1][dist_centre])) / 60 + 7.5 * demand[0]
+                time1_2 = (traffic(durations.loc[n2][n1])) / 60 + 7.5 * demand[1]
+                time2 = (traffic(durations.loc[dist_centre][n2])) / 60
+                time0_2 = (traffic(durations.loc[n2][dist_centre])) / 60 + 7.5 * demand[1]
+
+                # Some routes only visit two nodes
+                if n3 != 0:
+                    total_time = [[0, 0]]*3
+                    c = [0] * 3
+
+                    time2_3 = (traffic(durations.loc[n3][n2])) / 60 + 7.5 * demand[2]
+                    time3 = (traffic(durations.loc[dist_centre][n3])) / 60
+                    time1_3 = (traffic(durations.loc[n3][n1])) / 60 + 7.5 * demand[2]
+
+                    total_time[0] = [time0_1+time1_2+time2, time3*2]
+                    total_time[1] = [time0_2 + time2_3 + time3, time0_1*2]
+                    total_time[2] = [time0_1 + time1_3 + time3, time0_2*2]
+                else:
+                    total_time = [[0, 0]]*2
+                    c = [0]*2
+
+                    total_time[0] = [time0_1*2, time0_2*2]
+                    total_time[1] = [time0_2*2, time0_1*2]
+                
+                # find cost of the routes with just two nodes by iteration
+                # Choose lowest cost and add cost for extra to go to the third node
+                for i in range(len(total_time)):
+                    
+                    # Calculate costs for route to visit only two nodes
+                    if total_time[i][0] <= 240:
+                        c[i] = total_time[i][0] * 3.75
+                     # Otherwise calculate cost with overtime pricing
+                    else:
+                        overtime = total_time[i][0] - 240
+                        c[i] = 240 * 3.75 + overtime * 4.583
+
+                    # add extra costs for route to third node
+                    if total_time[i][1] <=240:
+                        c[i] += 2000
+                    else:
+                        c[i] += 4000
+                    
+                    # Choose the smallest cost to add
+                    costs[j] += min(c)
+
+            else:
+                time0_1 = (traffic(durations.loc[n1][dist_centre])) / 60 + 7.5 * demand[0]
+                
+                # Some routes only visit one node
+                if n3 != 0 & n2 !=0:
+                    time1_2 = (traffic(durations.loc[n2][n1])) / 60 + 7.5 * demand[1]
+                    time2_3 = (traffic(durations.loc[n3][n2])) / 60 + 7.5 * demand[2]
+                    time3 = (traffic(durations.loc[dist_centre][n3])) / 60
+                elif n2 != 0:
+                    time1_2 = (traffic(durations.loc[n2][n1])) / 60 + 7.5 * demand[1]
+                    time2_3 = 0
+                    time3 = (traffic(durations.loc[n2][dist_centre])) / 60
+                else:
+                    time1_2 = 0
+                    time2_3 = 0
+                    time3 = (traffic(durations.loc[dist_centre][n1])) / 60
+                    
+                # Calculate the total time for route 1
+                total_time = time0_1 + time1_2 + time2_3 + time3
+                # If the total time is less than or equal to 4h calculate cost using standard truck pricing
+                if total_time <= 240:
+                    cost = total_time * 3.75
+                # Otherwise calculate cost with overtime pricing
+                else:
+                    overtime = total_time - 240
+                    cost = 240 * 3.75 + overtime * 4.583
+                # add cost to total for this route
+                costs[j] += cost
+    return costs
 
 def main():
     weekday_feasible_routes, weekday_costs, weekday_extra_costs = weekday_routes()
