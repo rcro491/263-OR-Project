@@ -528,7 +528,6 @@ def simulate_weekdays(routes, n, df, a=3):
 
 def main():
     weekday_feasible_routes, weekday_costs, weekday_extra_costs = weekday_routes()
-    # print(weekday_feasible_routes)
     weekdays = pd.DataFrame(data=weekday_feasible_routes, columns=['Store 1', 'Store 2', 'Store 3'])
     weekday_cost = pd.Series(weekday_costs)
     weekday_extra = pd.Series(weekday_extra_costs)
@@ -538,6 +537,13 @@ def main():
     weekend_extra = pd.Series(weekend_extra_costs)
     LP_weekend()
     LP_weekday()
+    
+    # Hardcode selected routes 
+    weekday_selected = [1082, 1247, 1507, 1531, 1744, 189, 1944, 2031, 21, 2382, 2573, 2628, 2676, 2977, 3155, 3243, 332, 3383, 3417, 3534, 354, 3660, 465, 602, 609, 747, 833, 853]
+    weekend_selected = [1449, 1468, 2008, 209, 211, 212, 2433, 249, 2529, 2797, 3116, 423, 431, 437, 49, 514, 852]
+
+    costs_weekday = simulate_weekdays(weekday_selected, 10, weekdays)
+    print(costs_weekday)
 
 
 if __name__ == "__main__":
