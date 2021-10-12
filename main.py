@@ -480,15 +480,15 @@ def simulate_weekdays(routes, n, df, a=3):
                 for i in range(len(total_time)):
                     
                     # Calculate costs for route to visit only two nodes
-                    if total_time[i][0] <= 240:
-                        c[i] = total_time[i][0] * 3.75
+                    if total_time[i][1] <= 240:
+                        c[i] = total_time[i][1] * 3.75
                      # Otherwise calculate cost with overtime pricing
                     else:
-                        overtime = total_time[i][0] - 240
+                        overtime = total_time[i][1] - 240
                         c[i] = 240 * 3.75 + overtime * 4.583
 
                     # add extra costs for route to third node
-                    if total_time[i][1] <=240:
+                    if total_time[i][0] <=240:
                         c[i] += 2000
                     else:
                         c[i] += 4000
