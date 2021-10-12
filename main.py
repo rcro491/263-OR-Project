@@ -408,8 +408,9 @@ def traffic(duration):
     """
     Uncertainty in durations between nodes
     """
-    # Values to edit
-    time = np.random.normal(1.2*duration, 0.5*duration) + 3
+    # Values to edit 
+    # add three minutes
+    time = np.random.normal(1.2*duration, 0.5*duration) + 180
     return time
 
 def simulate_weekdays(routes, n, df, a=3):
@@ -451,29 +452,28 @@ def simulate_weekdays(routes, n, df, a=3):
             # need to factor in cost of extra truck
             if total_demand > 26:
                 # Start generating variation in durations
-                time0_1 = (traffic(durations.loc[n1][dist_centre])) / 60 + 7.5 * demand[0]
-                time1_2 = (traffic(durations.loc[n2][n1])) / 60 + 7.5 * demand[1]
+                time0_1 = (traffic(durations.loc[n1][dist_centre])) / 60
+                time1_2 = (traffic(durations.loc[n2][n1])) / 60
                 time2 = (traffic(durations.loc[dist_centre][n2])) / 60
-                time0_2 = (traffic(durations.loc[n2][dist_centre])) / 60 + 7.5 * demand[1]
-
+                time0_2 = (traffic(durations.loc[n2][dist_centre])) / 60
                 # Some routes only visit two nodes
                 if n3 != 0:
                     total_time = [[0, 0]]*3
                     c = [0] * 3
 
-                    time2_3 = (traffic(durations.loc[n3][n2])) / 60 + 7.5 * demand[2]
+                    time2_3 = (traffic(durations.loc[n3][n2])) / 60
                     time3 = (traffic(durations.loc[dist_centre][n3])) / 60
-                    time1_3 = (traffic(durations.loc[n3][n1])) / 60 + 7.5 * demand[2]
+                    time1_3 = (traffic(durations.loc[n3][n1])) / 60
 
-                    total_time[0] = [time0_1+time1_2+time2, time3*2]
-                    total_time[1] = [time0_2 + time2_3 + time3, time0_1*2]
-                    total_time[2] = [time0_1 + time1_3 + time3, time0_2*2]
+                    total_time[0] = [time0_1+(demand[0]*7.5)+time1_2+(demand[1]*7.5)+time2, (time3*2)+(demand[2]*7.5)]
+                    total_time[1] = [time0_2 + time2_3 + time3, (time0_1*2)+(demand[0]*7.5)]
+                    total_time[2] = [time0_1+(demand[0]*7.5)+ time1_3+ (7.5 * demand[2]) + time3, (time0_2*2)+(demand[1]*7.5)]
                 else:
                     total_time = [[0, 0]]*2
                     c = [0]*2
 
-                    total_time[0] = [time0_1*2, time0_2*2]
-                    total_time[1] = [time0_2*2, time0_1*2]
+                    total_time[0] = [time0_1*2+7.5*demand[0], time0_2*2+7.5*demand[1]]
+                    total_time[1] = [time0_2*2+7.5*demand[1], time0_1*2+7.5*demand[0]]
                 
                 # find cost of the routes with just two nodes by iteration
                 # Choose lowest cost and add cost for extra to go to the third node
