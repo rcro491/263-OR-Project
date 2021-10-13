@@ -27,7 +27,6 @@ durations.index = np.arange(1, len(durations) + 1)
 # print(weekend_demands.loc[50]['Store'])
 """
 HOW TO INDEX DATA IN DF
-
 locations: 
     locations has 5 index types being: Type, Location, Store, Lat and Long
     E.g: to get the name of store 1: "locations.Store[1]" which returns "Countdown Airport"
@@ -410,7 +409,8 @@ def traffic(duration):
     """
     # Values to edit 
     # add three minutes
-    time = np.random.normal(1.2*duration, 0.5*duration) + 180
+    count =0
+    time = np.random.normal(1.2*duration, 0.3*duration) + 180
     return time
 
 def simulate_weekdays(routes, n, df, a=3):
@@ -420,7 +420,6 @@ def simulate_weekdays(routes, n, df, a=3):
             df = dataframe of generated routes to pull selected routes from
             a = standard deviation in store demands, calculated to be approximately 2.6
     Output: costs = array of costs of routing for each simulation, length n
-
     """
     # index for distribution centre is 56
     dist_centre = 56
@@ -429,6 +428,7 @@ def simulate_weekdays(routes, n, df, a=3):
     
     # run n simulations
     for j in range(n):
+        count = 0
         # for each route in the selected routes
         for route in routes:
             # pull stores from each route
@@ -440,7 +440,11 @@ def simulate_weekdays(routes, n, df, a=3):
             # generate variation in demand
             for i in range(len(nodes)):
                 if nodes[i] != 0:
-                    demand[i] = round(np.random.normal(weekday_demands.loc[nodes[i]]['Average'], a))
+                    rand_demand = round(np.random.normal(weekday_demands.loc[nodes[i]]['Average'], a))
+                    if rand_demand <= 0:
+                        demand[i] = 1
+                    else:
+                        demand[i] = rand_demand
                     total_demand += demand[i]
 
             # Make into integers so can use for indexing
@@ -538,7 +542,6 @@ def simulate_weekends(routes, n, df, a=2):
             df = dataframe of generated routes to pull selected routes from
             a = standard deviation for demands, calculated from given data to be approximately 1.5
     Output: costs = array of costs of routing for each simulation, length n
-
     """
     # distribution centre index is 56
     dist_centre = 56
@@ -559,7 +562,11 @@ def simulate_weekends(routes, n, df, a=2):
             # generate variation in demand
             for i in range(len(nodes)):
                 if nodes[i] != 0:
-                    demand[i] = round(np.random.normal(weekend_demands.loc[nodes[i]]['Average'], a))
+                    rand_demand = round(np.random.normal(weekend_demands.loc[nodes[i]]['Average'], a))
+                    if rand_demand <= 0:
+                        demand[i] = 1
+                    else:
+                        demand[i] = rand_demand
                     total_demand += demand[i]
                     # demand array will now hold the time it takes to unload the respective demands
                     demand[i] = demand[i]*7.5
@@ -583,6 +590,7 @@ def simulate_weekends(routes, n, df, a=2):
                 time1_3 = (traffic(durations.loc[n3][n1])) / 60
                 time1_4 = (traffic(durations.loc[n4][n1])) / 60
                 time2_4 = (traffic(durations.loc[n4][n1])) / 60
+
 
                 total_time = [[0, 0]]*3 
                 # Did originally have it total_time = [[0, 0]]*7 to include routes commented out below
