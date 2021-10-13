@@ -409,7 +409,6 @@ def traffic(duration):
     """
     # Values to edit 
     # add three minutes
-    count =0
     time = np.random.normal(1.2*duration, 0.3*duration) + 180
     return time
 
@@ -428,7 +427,6 @@ def simulate_weekdays(routes, n, df, a=3):
     
     # run n simulations
     for j in range(n):
-        count = 0
         # for each route in the selected routes
         for route in routes:
             # pull stores from each route
@@ -457,9 +455,17 @@ def simulate_weekdays(routes, n, df, a=3):
             if total_demand > 26:
                 # Start generating variation in durations
                 time0_1 = (traffic(durations.loc[n1][dist_centre])) / 60
+                if time0_1 <= 2:
+                    time0_1 = 2
                 time1_2 = (traffic(durations.loc[n2][n1])) / 60
+                if time1_2 <= 2:
+                    time1_2 = 2
                 time2 = (traffic(durations.loc[dist_centre][n2])) / 60
+                if time2 <= 2:
+                    time2 = 2
                 time0_2 = (traffic(durations.loc[n2][dist_centre])) / 60
+                if time0_2 <= 2:
+                    time0_2 = 2
                 # If route contains three nodes
                 if n3 != 0:
                     # store 6 values, three for normal routes, three for extra trucks
@@ -468,8 +474,14 @@ def simulate_weekdays(routes, n, df, a=3):
                     c = [0] * 3
 
                     time2_3 = (traffic(durations.loc[n3][n2])) / 60
+                    if time2_3 <= 2:
+                        time2_3 = 2
                     time3 = (traffic(durations.loc[dist_centre][n3])) / 60
+                    if time3 <= 2:
+                        time3 = 2
                     time1_3 = (traffic(durations.loc[n3][n1])) / 60
+                    if time1_3 <= 2:
+                        time1_3 = 2
 
                     total_time[0] = [time0_1+(demand[0]*7.5)+time1_2+(demand[1]*7.5)+time2, (time3*2)+(demand[2]*7.5)]
                     total_time[1] = [time0_2 + time2_3 + time3, (time0_1*2)+(demand[0]*7.5)]
@@ -505,22 +517,36 @@ def simulate_weekdays(routes, n, df, a=3):
 
             else: # demand does not exceed 26
                 time0_1 = (traffic(durations.loc[n1][dist_centre])) / 60 + 7.5 * demand[0]
+                if time0_1 <= 2 :
+                    time0_1 = 2
                 
                 # If route contains three nodes
                 if n3 != 0 & n2 !=0:
                     time1_2 = (traffic(durations.loc[n2][n1])) / 60 + 7.5 * demand[1]
+                    if time1_2 <= 2:
+                        time1_2 = 2
                     time2_3 = (traffic(durations.loc[n3][n2])) / 60 + 7.5 * demand[2]
+                    if time2_3 <= 2:
+                        time2_3 = 2
                     time3 = (traffic(durations.loc[dist_centre][n3])) / 60
+                    if time3 <= 2 :
+                        time3 = 2
                 # If route contain two nodes
                 elif n2 != 0:
                     time1_2 = (traffic(durations.loc[n2][n1])) / 60 + 7.5 * demand[1]
+                    if time1_2 <= 2 :
+                        time1_2 = 2
                     time2_3 = 0
                     time3 = (traffic(durations.loc[n2][dist_centre])) / 60
+                    if time3 <= 2:
+                        time3 = 2
                 # If route contains only one node
                 else:
                     time1_2 = 0
                     time2_3 = 0
                     time3 = (traffic(durations.loc[dist_centre][n1])) / 60
+                    if time3 <=0 :
+                        time3 = 2
                     
                 # Calculate the total time for route 1
                 total_time = time0_1 + time1_2 + time2_3 + time3
@@ -581,16 +607,35 @@ def simulate_weekends(routes, n, df, a=2):
             if total_demand > 26:
                 # Construct route durations from each node to every other
                 time0_1 = (traffic(durations.loc[n1][dist_centre])) / 60
+                if time0_1 <= 2 :
+                    time0_1 = 2
                 time0_2 = (traffic(durations.loc[n2][dist_centre])) / 60
+                if time0_2 <= 2 :
+                    time0_2 = 2
                 time0_3 = (traffic(durations.loc[n3][dist_centre])) / 60
+                if time0_3 <= 2 :
+                    time0_3 = 2
                 time0_4 = (traffic(durations.loc[n4][dist_centre])) / 60
+                if time0_4 <= 2 :
+                    time0_4 = 2
                 time1_2 = (traffic(durations.loc[n2][n1])) / 60
+                if time1_2 <= 2 :
+                    time1_2 = 2
                 time2_3 = (traffic(durations.loc[n3][n2])) / 60
+                if time2_3 <= 2 :
+                    time2_3 = 2
                 time3_4 = (traffic(durations.loc[n4][n3])) / 60
+                if time3_4 <= 2:
+                    time3_4 = 2
                 time1_3 = (traffic(durations.loc[n3][n1])) / 60
+                if time1_3 <= 2:
+                    time1_3 = 2
                 time1_4 = (traffic(durations.loc[n4][n1])) / 60
+                if time1_4 <= 2:
+                    time1_4 = 2
                 time2_4 = (traffic(durations.loc[n4][n1])) / 60
-
+                if time2_4 <= 2 :
+                    time2_4 = 2
 
                 total_time = [[0, 0]]*3 
                 # Did originally have it total_time = [[0, 0]]*7 to include routes commented out below
@@ -641,32 +686,54 @@ def simulate_weekends(routes, n, df, a=2):
             else:
                 # Distribution centre to node1, constant despite other nodes
                 time0_1 = (durations.loc[n1][dist_centre]) / 60 + demand[0]
+                if time0_1 <= 2 :
+                    time0_1 = 2
                 
                 # If four nodes are visited en route
                 if n4!= 0 & n3 != 0 & n2 !=0:
                     time1_2 = (traffic(durations.loc[n2][n1])) / 60 + demand[1]
+                    if time1_2 <= 2 :
+                        time1_2 = 2
                     time2_3 = (traffic(durations.loc[n3][n2])) / 60 + demand[2]
+                    if time2_3 <= 2 :
+                        time2_3 = 2
                     time3_4 = (traffic(durations.loc[n4][n3])) / 60 + demand[3]
+                    if time3_4 <= 2 :
+                        time3_4 = 2
                     # Node4 back to distribution centre
                     time4 = (traffic(durations.loc[dist_centre][n4])) / 60
+                    if time4 <= 2 :
+                        time4 = 2
                 elif n3 != 0: # If route has three nodes
                     time1_2 = (traffic(durations.loc[n2][n1])) / 60 + demand[1]
+                    if time1_2 <= 2 :
+                        time1_2 = 2
                     time2_3 = (traffic(durations.loc[n3][n2])) / 60 + demand[2]
+                    if time2_3 <= 2 :
+                        time2_3 = 2
                     time3_4 = 0
                     # Node3 back to distribution centre
                     time4 = (traffic(durations.loc[dist_centre][n3])) / 60
+                    if time4 <= 2 :
+                        time4 = 2
                 elif n2 != 0: # If route contains two nodes
                     time1_2 = (traffic(durations.loc[n2][n1])) / 60 + demand[1]
+                    if time1_2 <= 2 :
+                        time1_2 = 2
                     time2_3 = 0
                     time3_4 = 0
                     # Node2 back to distribution centre
                     time4 = (traffic(durations.loc[dist_centre][n2])) / 60
+                    if time4 <= 2:
+                        time4 = 2
                 else: # If only one node in the route
                     time1_2 = 0
                     time2_3 = 0
                     time3_4 = 0
                     # Node1 back to distribution centre
                     time4 = (traffic(durations.loc[dist_centre][n1])) / 60
+                    if time4 <= 2 :
+                        time4 = 2
 
                 # Calculate the total time for route
                 total_time = time0_1 + time1_2 + time2_3 + time3_4 + time4
