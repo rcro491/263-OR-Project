@@ -410,6 +410,8 @@ def traffic(duration):
     # Values to edit 
     # add three minutes
     time = np.random.normal(1.2*duration, 0.3*duration) + 180
+    if time <=120:
+        time = 120
     return time
 
 def simulate_weekdays(routes, n, df, a=3):
