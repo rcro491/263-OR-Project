@@ -764,7 +764,10 @@ def delete_route(route_list,to_delete,weekdays_edit):
         for i in range(len(Nodes)):
             for j in range(len(to_delete)):
                 if Nodes[i] == to_delete[j]:
-                    weekdays_edit.loc[Nodes[i]] = 0
+                    row = np.array(Nodes)
+                    row = np.delete(row, i)
+                    row = np.append(row, 0)
+                    weekdays_edit.iloc[route,] = row
     return weekdays_edit
 
 def add_demand(demand_list,stores,amount_to_add):
