@@ -36,7 +36,7 @@ demands:
 distances:
     works differently to locations data. easy to access this one using the ".loc" method
     E.g: "distances.loc[1]" grabs the entire column for Countdown Airport and all the rows of corresponding
-         distances.
+        distances.
     Then "distances.loc[1][2]" gives us the distance from Countdown Auckland City (store 2) to Countdown Airport
     (store 1). Piazza post Kevin says that we should go rows to columns, so this means to get the distance from store 32
     to store 33 we use "distances.loc[33][32]" ie "distances.loc[destination][origin]"
@@ -414,7 +414,7 @@ def traffic(duration):
         time = 120
     return time
 
-def simulate_weekdays(routes, n, df, a=3):
+def simulate_weekdays(routes, n, df, a=3, weekday_demands_edit = None):
     """
     Inputs: Routes = array of routes that have been selected
             n = number of simulations to be done
@@ -440,7 +440,10 @@ def simulate_weekdays(routes, n, df, a=3):
             # generate variation in demand
             for i in range(len(nodes)):
                 if nodes[i] != 0:
-                    rand_demand = round(np.random.normal(weekday_demands.loc[nodes[i]]['Average'], a))
+                    if weekday_demands_edit is None:
+                        rand_demand = round(np.random.normal(weekday_demands.loc[nodes[i]]['Average'], a))
+                    else:
+                        rand_demand = round(np.random.normal(weekday_demands_edit.loc[nodes[i]]['Average'], a))
                     if rand_demand <= 0:
                         demand[i] = 1
                     else:
@@ -503,7 +506,7 @@ def simulate_weekdays(routes, n, df, a=3):
                     # Calculate costs for route to visit only two nodes
                     if total_time[i][1] <= 240:
                         c[i] = total_time[i][1] * 3.75
-                     # Otherwise calculate cost with overtime pricing
+                    # Otherwise calculate cost with overtime pricing
                     else:
                         overtime = total_time[i][1] - 240
                         c[i] = 240 * 3.75 + overtime * 4.583
@@ -563,7 +566,7 @@ def simulate_weekdays(routes, n, df, a=3):
                 costs[j] += cost
     return costs
 
-def simulate_weekends(routes, n, df, a=2):
+def simulate_weekends(routes, n, df, a=2,weekend_demands_edit = None):
     """
     Inputs: Routes = array of routes that have been selected
             n = number of simulations to be done
@@ -590,7 +593,10 @@ def simulate_weekends(routes, n, df, a=2):
             # generate variation in demand
             for i in range(len(nodes)):
                 if nodes[i] != 0:
-                    rand_demand = round(np.random.normal(weekend_demands.loc[nodes[i]]['Average'], a))
+                    if weekend_demands_edit is None:
+                        rand_demand = round(np.random.normal(weekend_demands.loc[nodes[i]]['Average'], a))
+                    else:
+                        rand_demand = round(np.random.normal(weekend_demands_edit.loc[nodes[i]]['Average'], a))
                     if rand_demand <= 0:
                         demand[i] = 1
                     else:
@@ -669,7 +675,7 @@ def simulate_weekends(routes, n, df, a=2):
                             overtime = total_time[i][1] - 240
                             c[i+len(total_time)] += 240 * 3.75 + overtime * 4.583
                             c[i] += 4000
-                     # Otherwise calculate cost with overtime pricing
+                    # Otherwise calculate cost with overtime pricing
                     else:
                         overtime = total_time[i][0] - 240
                         c[i] = 240 * 3.75 + overtime * 4.583
@@ -751,6 +757,25 @@ def simulate_weekends(routes, n, df, a=2):
         
     return costs
 
+def delete_route(route_list,to_delete,weekdays_edit):
+
+    for route in route_list:
+        Nodes = weekdays_edit.iloc[route,]
+        for i in range(len(Nodes)):
+            for j in range(len(to_delete)):
+                if Nodes[i] == to_delete[j]:
+                    weekdays_edit.loc[Nodes[i]] = 0
+    return weekdays_edit
+
+def add_demand(demand_list,stores,amount_to_add):
+
+    for store_demand in demand_list:
+        for i in range(len(stores)):
+            if store_demand == stores[i]:
+                demand_list.loc[store_demand] = demand_list.loc[store_demand] + amount_to_add
+    return demand_list
+    
+
 def main():
     weekday_feasible_routes, weekday_costs, weekday_extra_costs = weekday_routes()
     weekdays = pd.DataFrame(data=weekday_feasible_routes, columns=['Store 1', 'Store 2', 'Store 3'])
@@ -760,14 +785,16 @@ def main():
     weekends = pd.DataFrame(data=weekend_feasible_routes, columns=['Store 1', 'Store 2', 'Store 3', 'Store 4'])
     weekend_cost = pd.Series(weekend_costs)
     weekend_extra = pd.Series(weekend_extra_costs)
+    '''
     LP_weekend()
     LP_weekday()
+    '''
     
     # Hardcode selected routes 
     weekday_selected = [1082, 1247, 1507, 1531, 1744, 189, 1944, 2031, 21, 2382, 2573, 2628, 2676, 2977, 3155, 3243, 332, 3383, 3417, 3534, 354, 3660, 465, 602, 609, 747, 833, 853]
     weekend_selected = [1449, 1468, 2008, 209, 211, 212, 2433, 249, 2529, 2797, 3116, 423, 431, 437, 49, 514, 852]
 
-    
+
     costs_weekday = simulate_weekdays(weekday_selected, 1000, weekdays)
     print(np.mean(costs_weekday))
 
@@ -775,6 +802,39 @@ def main():
     print(np.mean(costs_weekend))
     
     # can then find mean, ttest, 95% int, error rate
+
+    #weekday_demands = demand list for each store
+    weekday_demands_edit = weekday_demands
+    weekend_demands_edit = weekend_demands
+
+    #weekdays = all weekdays routes
+    weekdays_edit = weekdays
+    weekends_edit = weekends
+
+    #array of nodes to delete
+    to_delete = [37,14]
+
+    weekdays_edit = delete_route(weekday_selected,to_delete,weekdays_edit)
+    weekends_edit = delete_route(weekend_selected,to_delete,weekends_edit)
+
+    #Stores = stores to add demand to
+    stores = [55,3]
+    amount_to_add = 3
+
+
+    weekday_demands_edit = add_demand(weekday_demands_edit,stores,amount_to_add)
+    weekend_demands_edit = add_demand(weekend_demands_edit,stores,amount_to_add)
+
+    print("With Deleted Nodes")
+    
+    costs_weekday = simulate_weekdays(weekday_selected, 1000, weekdays_edit,weekday_demands_edit = weekday_demands_edit)
+    print(np.mean(costs_weekday))
+    
+    costs_weekend = simulate_weekends(weekend_selected, 1000, weekends_edit,weekend_demands_edit = weekend_demands_edit)
+    print(np.mean(costs_weekend))
+
+
+
 
 
 if __name__ == "__main__":
