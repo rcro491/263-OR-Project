@@ -6,6 +6,9 @@ import itertools
 from pulp import *
 from scipy import stats
 
+# Simulations later require random number generation. Make results repeatable.
+np.random.seed(16)
+
 # read data and shift indexes so they are the same as numbering in map
 locations = pd.read_csv("WoolworthsLocations.csv")
 locations.index = np.arange(1, len(locations) + 1)
