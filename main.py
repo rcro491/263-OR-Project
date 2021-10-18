@@ -4,6 +4,7 @@ import folium
 import openrouteservice as ors
 import itertools
 from pulp import *
+from scipy import stats
 
 # read data and shift indexes so they are the same as numbering in map
 locations = pd.read_csv("WoolworthsLocations.csv")
@@ -816,9 +817,13 @@ def main():
 
     costs_weekday = simulate_weekdays(weekday_selected, 1000, weekdays)
     print("Average Weekday Cost = ", np.mean(costs_weekday))
+    costs_weekday.sort()
+    print("95% CI = ", costs_weekday[25], ", ", costs_weekday[975])
 
     costs_weekend = simulate_weekends(weekend_selected, 1000, weekends)
     print("Average Weekend Cost = ", np.mean(costs_weekend))
+    costs_weekend.sort()
+    print("95% CI = ", costs_weekend[25], ", ", costs_weekend[975])
     
     # can then find mean, ttest, 95% int, error rate
 
@@ -846,17 +851,28 @@ def main():
 
 
     weekday_demands_edit = add_demand(weekday_demands_edit,stores,amount_to_add)
-    #Only add a demand of 1 on weekends since average demands are significantly lower than weekdays
     weekend_demands_edit = add_demand(weekend_demands_edit, stores, (amount_to_add-2))
 
     print("With 2 Stores Closed:")
     
-    costs_weekday = simulate_weekdays(weekday_selected, 1000, weekdays_edit,weekday_demands_edit = weekday_demands_edit)
-    print("Average Weekday Cost = ", np.mean(costs_weekday))
+    costs_weekday2 = simulate_weekdays(weekday_selected, 1000, weekdays_edit,weekday_demands_edit = weekday_demands_edit)
+    print("Average Weekday Cost = ", np.mean(costs_weekday2))
+    costs_weekday2.sort()
+    print("95% CI = ", costs_weekday2[25], ", ", costs_weekday2[975])
     
-    costs_weekend = simulate_weekends(weekend_selected, 1000, weekends_edit,weekend_demands_edit = weekend_demands_edit)
-    print("Average Weekend Cost = ", np.mean(costs_weekend))
-
+    costs_weekend2 = simulate_weekends(weekend_selected, 1000, weekends_edit,weekend_demands_edit = weekend_demands_edit)
+    print("Average Weekend Cost = ", np.mean(costs_weekend2))
+    costs_weekend2.sort()
+    print("95% CI = ", costs_weekend2[25], ", ", costs_weekend2[975])
+    #Paired Sample Analysis
+    cost_weekday_diff = np.subtract(costs_weekday, costs_weekday2)
+    print("Paired Sample Analysis on Weekday Costs: ", stats.ttest_1samp(cost_weekday_diff, 0))
+    cost_weekday_diff.sort()
+    print("95% CI : ", cost_weekday_diff[25], ", ", cost_weekday_diff[975])
+    cost_weekend_diff = np.subtract(costs_weekend, costs_weekend2)
+    print("Paired Sample Analysis on Weekend Costs: ", stats.ttest_1samp(cost_weekend_diff, 0))
+    cost_weekend_diff.sort()
+    print("95% CI : ", cost_weekend_diff[25], ", ", cost_weekend_diff[975])
     #Now simulate 3 stores closing:
 
     to_delete2 = [29]
@@ -871,7 +887,6 @@ def main():
 
     #Stores = stores to add demand to
     stores2 = [30]
-    #Only add demand of 1 since demand for Countdown Metro stores are significantly lower than regular Countdown stores
     amount_to_add = 1
 
     #Only need to add demand to 1 extra node as 2 stores have had demand increased above
@@ -880,11 +895,25 @@ def main():
 
     print("With 3 Stores Closed:")
     
-    costs_weekday = simulate_weekdays(weekday_selected, 1000, weekdays_edit,weekday_demands_edit = weekday_demands_edit)
-    print("Average Weekday Cost = ", np.mean(costs_weekday))
+    costs_weekday3 = simulate_weekdays(weekday_selected, 1000, weekdays_edit,weekday_demands_edit = weekday_demands_edit)
+    print("Average Weekday Cost = ", np.mean(costs_weekday3))
+    costs_weekday3.sort()
+    print("95% CI = ", costs_weekday3[25], ", ", costs_weekday3[975])
     
-    costs_weekend = simulate_weekends(weekend_selected, 1000, weekends_edit,weekend_demands_edit = weekend_demands_edit)
-    print("Average Weekend Cost = ", np.mean(costs_weekend))
+    
+    costs_weekend3 = simulate_weekends(weekend_selected, 1000, weekends_edit,weekend_demands_edit = weekend_demands_edit)
+    print("Average Weekend Cost = ", np.mean(costs_weekend3))
+    costs_weekend3.sort()
+    print("95% CI = ", costs_weekend3[25], ", ", costs_weekend3[975])
+    #Paired Sample Analysis
+    cost_weekday_diff = np.subtract(costs_weekday, costs_weekday3)
+    print("Paired Sample Analysis on Weekday Costs: ", stats.ttest_1samp(cost_weekday_diff, 0))
+    cost_weekday_diff.sort()
+    print("95% CI : ", cost_weekday_diff[25], ", ", cost_weekday_diff[975])
+    cost_weekend_diff = np.subtract(costs_weekend, costs_weekend3)
+    print("Paired Sample Analysis on Weekend Costs: ", stats.ttest_1samp(cost_weekend_diff, 0))
+    cost_weekend_diff.sort()
+    print("95% CI : ", cost_weekend_diff[25], ", ", cost_weekend_diff[975])
 
 
 
