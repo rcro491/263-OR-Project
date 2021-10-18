@@ -846,6 +846,7 @@ def main():
 
 
     weekday_demands_edit = add_demand(weekday_demands_edit,stores,amount_to_add)
+    #Only add a demand of 1 on weekends since average demands are significantly lower than weekdays
     weekend_demands_edit = add_demand(weekend_demands_edit, stores, (amount_to_add-2))
 
     print("With 2 Stores Closed:")
@@ -870,6 +871,7 @@ def main():
 
     #Stores = stores to add demand to
     stores2 = [30]
+    #Only add demand of 1 since demand for Countdown Metro stores are significantly lower than regular Countdown stores
     amount_to_add = 1
 
     #Only need to add demand to 1 extra node as 2 stores have had demand increased above
