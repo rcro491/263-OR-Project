@@ -846,7 +846,7 @@ def main():
 
 
     weekday_demands_edit = add_demand(weekday_demands_edit,stores,amount_to_add)
-    weekend_demands_edit = add_demand(weekend_demands_edit, stores, amount_to_add)
+    weekend_demands_edit = add_demand(weekend_demands_edit, stores, (amount_to_add-2))
 
     print("With 2 Stores Closed:")
     
@@ -870,7 +870,7 @@ def main():
 
     #Stores = stores to add demand to
     stores2 = [30]
-    amount_to_add = 2
+    amount_to_add = 1
 
     #Only need to add demand to 1 extra node as 2 stores have had demand increased above
     weekday_demands_edit = add_demand(weekday_demands_edit,stores2,amount_to_add)
